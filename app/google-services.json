@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "23490813165",
+    "project_id": "splitstay-7b551",
+    "storage_bucket": "splitstay-7b551.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23490813165:android:a2699a130c4ec53fcac0e4",
+        "android_client_info": {
+          "package_name": "com.splitstay.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNaQpcbRWcm2zBho_HDynzPAaNXonnV6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

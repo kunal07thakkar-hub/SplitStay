@@ -2,10 +2,12 @@
 package com.splitstay.app
 
 import android.content.Context
+import com.splitstay.app.navigation.AppNavigation
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import com.google.firebase.FirebaseApp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -79,10 +81,10 @@ class MainActivity : ComponentActivity() {
             .build()
 
         connectivityManager.registerNetworkCallback(request, callback)
-
+        FirebaseApp.initializeApp(this)
         setContent {
             SplitStayTheme {
-                SplitStaySplashScreen(
+                AppNavigation(
                     internetAvailable = internetAvailable.value
                 )
             }
@@ -107,66 +109,61 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
-fun SplitStaySplashScreen(internetAvailable: Boolean) {
-
-    var showNextScreen by remember { mutableStateOf(false) }
-
+fun SplitStaySplashScreen(
+    internetAvailable: Boolean,
+    onContinue: () -> Unit
+) {
     LaunchedEffect(internetAvailable) {
         if (internetAvailable) {
             delay(2200)
-            showNextScreen = true
-        } else {
-            showNextScreen = false
+            onContinue()
         }
     }
 
-    if (showNextScreen) {
-        SplitStayNextScreen()
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.splitstay_splash),
+            contentDescription = "SplitStay Logo and Tagline",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 90.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.splitstay_splash),
-                contentDescription = "SplitStay Logo and Tagline",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (internetAvailable) {
+                Text(
+                    text = "Connecting with SplitStay",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
 
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 90.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (internetAvailable) {
-                    Text(
-                        text = "Connecting with SplitStay",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                LoadingDots()
+            } else {
+                Text(
+                    text = "Please connect to the Internet",
+                    color = SecondaryText,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
 
-                    LoadingDots()
-                } else {
-                    Text(
-                        text = "Please connect to the Internet",
-                        color = SecondaryText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Waiting for connection...",
-                        color = SecondaryText,
-                        fontSize = 13.sp
-                    )
-                }
+                Text(
+                    text = "Waiting for connection...",
+                    color = SecondaryText,
+                    fontSize = 13.sp
+                )
             }
         }
     }
@@ -239,20 +236,12 @@ fun LoadingDots() {
 
 @Composable
 fun SplitStayNextScreen() {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Welcome to SplitStay!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+    RoleSelectionScreen(
+        onStudentClick = {
+            // Student login will be added next
+        },
+        onOwnerClick = {
+            // Property owner login will be added next
         }
-    }
+    )
 }
