@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.splitstay.app.auth.presentation.OwnerKycScreen
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -160,12 +161,9 @@ fun AppNavigation(
             )
         }
 
-        // Owner KYC is the next onboarding step.
+        // Actual Owner KYC form
         composable<OwnerKycRequired> {
-            OwnerStatusScreen(
-                title = "Complete Owner Verification",
-                message = "Your email is verified. Please complete your property and identity verification before your property can be published."
-            )
+            OwnerKycScreen()
         }
 
         // Owner approval waiting screen.
