@@ -23,7 +23,18 @@ private val OwnerBackground = Color(0xFFF8FAFC)
 private val OwnerText = Color(0xFF334155)
 
 @Composable
-fun OwnerAuthScreen() {
+fun OwnerAuthScreen(
+    onSubmit: (
+        fullName: String,
+        propertyName: String,
+        email: String,
+        mobile: String,
+        password: String,
+        isRegister: Boolean
+    ) -> Unit = { _, _, _, _, _, _ -> },
+    isLoading: Boolean = false,
+    errorMessage: String? = null
+) {
     var isRegister by remember { mutableStateOf(true) }
     var fullName by remember { mutableStateOf("") }
     var propertyName by remember { mutableStateOf("") }
@@ -31,6 +42,7 @@ fun OwnerAuthScreen() {
     var mobile by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -58,10 +70,7 @@ fun OwnerAuthScreen() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = if (isRegister)
-                "Create Owner Account"
-            else
-                "Welcome Back!",
+            text = if (isRegister) "Create Owner Account" else "Welcome Back!",
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,
             color = OwnerText
@@ -89,41 +98,41 @@ fun OwnerAuthScreen() {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 if (isRegister) {
-                    OwnerAuthField(
-                        "Owner Full Name",
-                        fullName
-                    ) { fullName = it }
+                    OwnerAuthField("Owner Full Name", fullName) {
+                        fullName = it
+                    }
 
-                    OwnerAuthField(
-                        "PG / Hostel Name",
-                        propertyName
-                    ) { propertyName = it }
+                    OwnerAuthField("PG / Hostel Name", propertyName) {
+                        propertyName = it
+                    }
                 }
 
-                OwnerAuthField(
-                    "Email Address",
-                    email
-                ) { email = it }
+                OwnerAuthField("Email Address", email) {
+                    email = it
+                }
 
                 if (isRegister) {
-                    OwnerAuthField(
-                        "Mobile Number",
-                        mobile
-                    ) { mobile = it }
+                    OwnerAuthField("Mobile Number", mobile) {
+                        mobile = it
+                    }
                 }
 
                 OwnerAuthField(
-                    "Password",
-                    password,
+                    label = "Password",
+                    value = password,
                     isPassword = true
-                ) { password = it }
+                ) {
+                    password = it
+                }
 
                 if (isRegister) {
                     OwnerAuthField(
-                        "Confirm Password",
-                        confirmPassword,
+                        label = "Confirm Password",
+                        value = confirmPassword,
                         isPassword = true
-                    ) { confirmPassword = it }
+                    ) {
+                        confirmPassword = it
+                    }
 
                     Text(
                         text = "After registration, you'll verify your email and mobile number, then submit your KYC details for admin approval.",
@@ -133,10 +142,61 @@ fun OwnerAuthScreen() {
                     )
                 }
 
+                validationError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+
                 Button(
                     onClick = {
-                        // Firebase authentication will be connected later.
+                        validationError = when {
+                            isRegister && fullName.isBlank() ->
+                                "Please enter your full name."
+
+                            isRegister && propertyName.isBlank() ->
+                                "Please enter your PG or hostel name."
+
+                            email.isBlank() ->
+                                "Please enter your email address."
+
+                            isRegister && mobile.isBlank() ->
+                                "Please enter your mobile number."
+
+                            password.isBlank() ->
+                                "Please enter your password."
+
+                            isRegister && password.length < 6 ->
+                                "Password must contain at least 6 characters."
+
+                            isRegister && password != confirmPassword ->
+                                "Passwords do not match."
+
+                            else -> null
+                        }
+
+                        if (validationError == null) {
+                            onSubmit(
+                                fullName.trim(),
+                                propertyName.trim(),
+                                email.trim(),
+                                mobile.trim(),
+                                password,
+                                isRegister
+                            )
+                        }
                     },
+                    enabled = !isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -145,23 +205,30 @@ fun OwnerAuthScreen() {
                         containerColor = OwnerPurple
                     )
                 ) {
-                    Text(
-                        if (isRegister)
-                            "Create Owner Account"
-                        else
-                            "Login",
-                        fontSize = 16.sp
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            if (isRegister) "Create Owner Account" else "Login",
+                            fontSize = 16.sp
+                        )
+                    }
                 }
 
                 TextButton(
                     onClick = {
                         isRegister = !isRegister
+                        validationError = null
                     },
+                    enabled = !isLoading,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        if (isRegister)
+                        text = if (isRegister)
                             "Already registered? Login"
                         else
                             "New to SplitStay? Register",

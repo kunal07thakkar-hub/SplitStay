@@ -9,7 +9,7 @@ data object Splash
 @Serializable
 data object RoleSelection
 
-// Navigation graph routes
+// Navigation graphs
 @Serializable
 data object AuthGraph
 
@@ -26,9 +26,19 @@ data object StudentAuth
 @Serializable
 data object OwnerAuth
 
+@Serializable
+data object EmailVerification
+
 // Dashboard destinations
 @Serializable
 data object StudentHome
 
 @Serializable
 data object OwnerHome
+
+// Owner onboarding destinations
+@Serializable
+data object OwnerKycRequired
+
+@Serializable
+data object OwnerPendingApproval

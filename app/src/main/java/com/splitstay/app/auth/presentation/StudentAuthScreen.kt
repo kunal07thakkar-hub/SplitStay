@@ -21,13 +21,24 @@ private val AuthBackground = Color(0xFFF8FAFC)
 private val AuthText = Color(0xFF334155)
 
 @Composable
-fun StudentAuthScreen() {
+fun StudentAuthScreen(
+    onSubmit: (
+        fullName: String,
+        email: String,
+        mobile: String,
+        password: String,
+        isRegister: Boolean
+    ) -> Unit = { _, _, _, _, _ -> },
+    isLoading: Boolean = false,
+    errorMessage: String? = null
+) {
     var isRegister by remember { mutableStateOf(true) }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var mobile by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -83,33 +94,90 @@ fun StudentAuthScreen() {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 if (isRegister) {
-                    AuthField("Full Name", fullName) { fullName = it }
+                    AuthField("Full Name", fullName) {
+                        fullName = it
+                    }
                 }
 
-                AuthField("Email Address", email) { email = it }
+                AuthField("Email Address", email) {
+                    email = it
+                }
 
                 if (isRegister) {
-                    AuthField("Mobile Number", mobile) { mobile = it }
+                    AuthField("Mobile Number", mobile) {
+                        mobile = it
+                    }
                 }
 
                 AuthField(
-                    "Password",
-                    password,
+                    label = "Password",
+                    value = password,
                     isPassword = true
-                ) { password = it }
+                ) {
+                    password = it
+                }
 
                 if (isRegister) {
                     AuthField(
-                        "Confirm Password",
-                        confirmPassword,
+                        label = "Confirm Password",
+                        value = confirmPassword,
                         isPassword = true
-                    ) { confirmPassword = it }
+                    ) {
+                        confirmPassword = it
+                    }
+                }
+
+                validationError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
                 }
 
                 Button(
                     onClick = {
-                        // Firebase authentication will be connected later.
+                        validationError = when {
+                            isRegister && fullName.isBlank() ->
+                                "Please enter your full name."
+
+                            email.isBlank() ->
+                                "Please enter your email address."
+
+                            isRegister && mobile.isBlank() ->
+                                "Please enter your mobile number."
+
+                            password.isBlank() ->
+                                "Please enter your password."
+
+                            isRegister && password.length < 6 ->
+                                "Password must contain at least 6 characters."
+
+                            isRegister && password != confirmPassword ->
+                                "Passwords do not match."
+
+                            else -> null
+                        }
+
+                        if (validationError == null) {
+                            onSubmit(
+                                fullName.trim(),
+                                email.trim(),
+                                mobile.trim(),
+                                password,
+                                isRegister
+                            )
+                        }
                     },
+                    enabled = !isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -118,18 +186,30 @@ fun StudentAuthScreen() {
                         containerColor = AuthBlue
                     )
                 ) {
-                    Text(
-                        if (isRegister) "Create Account" else "Login",
-                        fontSize = 16.sp
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            if (isRegister) "Create Account" else "Login",
+                            fontSize = 16.sp
+                        )
+                    }
                 }
 
                 TextButton(
-                    onClick = { isRegister = !isRegister },
+                    onClick = {
+                        isRegister = !isRegister
+                        validationError = null
+                    },
+                    enabled = !isLoading,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        if (isRegister)
+                        text = if (isRegister)
                             "Already have an account? Login"
                         else
                             "New to SplitStay? Create Account",

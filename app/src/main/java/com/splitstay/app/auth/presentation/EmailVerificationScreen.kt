@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.sp
 fun EmailVerificationScreen(
     email: String,
     isVerified: Boolean = false,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
     onResendEmail: () -> Unit = {},
     onCheckVerification: () -> Unit = {},
     onContinue: () -> Unit = {}
@@ -89,6 +91,7 @@ fun EmailVerificationScreen(
 
             Button(
                 onClick = onContinue,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -102,6 +105,7 @@ fun EmailVerificationScreen(
         } else {
             Button(
                 onClick = onCheckVerification,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -110,17 +114,39 @@ fun EmailVerificationScreen(
                     containerColor = blue
                 )
             ) {
-                Text("I've Verified My Email")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("I've Verified My Email")
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = onResendEmail) {
+            TextButton(
+                onClick = onResendEmail,
+                enabled = !isLoading
+            ) {
                 Text(
                     "Resend Verification Email",
                     color = blue
                 )
             }
+        }
+
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                fontSize = 13.sp
+            )
         }
     }
 }
