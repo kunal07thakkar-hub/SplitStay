@@ -1,3 +1,4 @@
+
 package com.splitstay.app.navigation
 
 import kotlinx.serialization.Serializable
@@ -37,6 +38,9 @@ data object OwnerProperties
 
 @Serializable
 data object OwnerAddProperty
+
+@Serializable
+data object OwnerRoomBedManagement
 
 @Serializable
 data object OwnerKycRequired

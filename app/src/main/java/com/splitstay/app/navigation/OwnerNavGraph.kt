@@ -1,3 +1,4 @@
+
 package com.splitstay.app.navigation
 
 import androidx.compose.runtime.LaunchedEffect
@@ -12,20 +13,21 @@ import com.splitstay.app.owner.presentation.OwnerAddPropertyScreen
 import com.splitstay.app.owner.presentation.OwnerDashboardScreen
 import com.splitstay.app.owner.presentation.OwnerMyPropertiesScreen
 import com.splitstay.app.property.presentation.PropertyViewModel
+import com.splitstay.app.room.presentation.OwnerRoomBedManagementScreen
+import com.splitstay.app.room.presentation.RoomBedViewModel
 
 fun NavGraphBuilder.ownerNavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    propertyViewModel: PropertyViewModel
+    propertyViewModel: PropertyViewModel,
+    roomBedViewModel: RoomBedViewModel
 ) {
     navigation<OwnerGraph>(startDestination = OwnerHome) {
 
         composable<OwnerHome> {
             val profile by authViewModel.ownerProfile.collectAsState()
-            val isProfileLoading by
-            authViewModel.isOwnerProfileLoading.collectAsState()
-            val profileError by
-            authViewModel.ownerProfileError.collectAsState()
+            val isProfileLoading by authViewModel.isOwnerProfileLoading.collectAsState()
+            val profileError by authViewModel.ownerProfileError.collectAsState()
             val properties by propertyViewModel.properties.collectAsState()
 
             LaunchedEffect(Unit) {
@@ -39,22 +41,23 @@ fun NavGraphBuilder.ownerNavGraph(
                 propertyCount = properties.size,
                 isLoading = isProfileLoading,
                 errorMessage = profileError,
-                onRetry = {
-                    authViewModel.loadOwnerProfile()
-                },
+                onRetry = { authViewModel.loadOwnerProfile() },
                 onPropertiesClick = {
                     navController.navigate(OwnerProperties)
-                }
+                },
+                onBookingsClick = {},
+                onBedsClick = {
+                    navController.navigate(OwnerRoomBedManagement)
+                },
+                onEarningsClick = {},
+                onProfileClick = {}
             )
         }
 
         composable<OwnerProperties> {
-            val properties by
-            propertyViewModel.properties.collectAsState()
-            val isLoading by
-            propertyViewModel.isLoading.collectAsState()
-            val errorMessage by
-            propertyViewModel.errorMessage.collectAsState()
+            val properties by propertyViewModel.properties.collectAsState()
+            val isLoading by propertyViewModel.isLoading.collectAsState()
+            val errorMessage by propertyViewModel.errorMessage.collectAsState()
 
             LaunchedEffect(Unit) {
                 propertyViewModel.observeProperties()
@@ -64,9 +67,7 @@ fun NavGraphBuilder.ownerNavGraph(
                 properties = properties,
                 isLoading = isLoading,
                 errorMessage = errorMessage,
-                onRetry = {
-                    propertyViewModel.retryLoading()
-                },
+                onRetry = { propertyViewModel.retryLoading() },
                 onAddProperty = {
                     navController.navigate(OwnerAddProperty)
                 }
@@ -74,12 +75,9 @@ fun NavGraphBuilder.ownerNavGraph(
         }
 
         composable<OwnerAddProperty> {
-            val isSaving by
-            propertyViewModel.isSaving.collectAsState()
-            val saveError by
-            propertyViewModel.saveErrorMessage.collectAsState()
-            val saveCompleted by
-            propertyViewModel.saveCompleted.collectAsState()
+            val isSaving by propertyViewModel.isSaving.collectAsState()
+            val saveError by propertyViewModel.saveErrorMessage.collectAsState()
+            val saveCompleted by propertyViewModel.saveCompleted.collectAsState()
 
             LaunchedEffect(saveCompleted) {
                 if (saveCompleted) {
@@ -94,6 +92,26 @@ fun NavGraphBuilder.ownerNavGraph(
                 onSaveProperty = { draft ->
                     propertyViewModel.addProperty(draft)
                 },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<OwnerRoomBedManagement> {
+            val properties by propertyViewModel.properties.collectAsState()
+            val propertiesLoading by propertyViewModel.isLoading.collectAsState()
+            val propertiesError by propertyViewModel.errorMessage.collectAsState()
+
+            LaunchedEffect(Unit) {
+                propertyViewModel.observeProperties()
+            }
+
+            OwnerRoomBedManagementScreen(
+                properties = properties,
+                propertiesLoading = propertiesLoading,
+                propertiesError = propertiesError,
+                roomBedViewModel = roomBedViewModel,
                 onBack = {
                     navController.popBackStack()
                 }

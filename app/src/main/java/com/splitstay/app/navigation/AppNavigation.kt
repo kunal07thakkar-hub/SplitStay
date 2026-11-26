@@ -1,3 +1,4 @@
+
 package com.splitstay.app.navigation
 
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +40,9 @@ import com.splitstay.app.owner.presentation.OwnerApplicationStatusScreen
 import com.splitstay.app.property.data.PropertyRepository
 import com.splitstay.app.property.presentation.PropertyViewModel
 import com.splitstay.app.property.presentation.PropertyViewModelFactory
+import com.splitstay.app.room.data.RoomBedRepository
+import com.splitstay.app.room.presentation.RoomBedViewModel
+import com.splitstay.app.room.presentation.RoomBedViewModelFactory
 
 @Composable
 fun AppNavigation(
@@ -57,13 +61,25 @@ fun AppNavigation(
         factory = AuthViewModelFactory()
     )
 
+    val firestore = FirebaseFirestore.getInstance()
+    val firebaseAuth = FirebaseAuth.getInstance()
+
     val propertyRepository = PropertyRepository(
-        firestore = FirebaseFirestore.getInstance(),
-        firebaseAuth = FirebaseAuth.getInstance()
+        firestore = firestore,
+        firebaseAuth = firebaseAuth
     )
 
     val propertyViewModel: PropertyViewModel = viewModel(
         factory = PropertyViewModelFactory(propertyRepository)
+    )
+
+    val roomBedRepository = RoomBedRepository(
+        firestore = firestore,
+        auth = firebaseAuth
+    )
+
+    val roomBedViewModel: RoomBedViewModel = viewModel(
+        factory = RoomBedViewModelFactory(roomBedRepository)
     )
 
     NavHost(
@@ -84,8 +100,7 @@ fun AppNavigation(
         }
 
         composable<AdminDashboard> {
-            val application by
-            kycViewModel.application.collectAsState()
+            val application by kycViewModel.application.collectAsState()
 
             AdminReviewDashboardScreen(
                 application = application,
@@ -150,8 +165,7 @@ fun AppNavigation(
         )
 
         composable<EmailVerification> {
-            val uiState by
-            authViewModel.uiState.collectAsState()
+            val uiState by authViewModel.uiState.collectAsState()
 
             LaunchedEffect(uiState) {
                 when (uiState) {
@@ -210,8 +224,7 @@ fun AppNavigation(
         }
 
         composable<OwnerPendingApproval> {
-            val application by
-            kycViewModel.application.collectAsState()
+            val application by kycViewModel.application.collectAsState()
 
             OwnerApplicationStatusScreen(
                 application = application,
@@ -230,7 +243,8 @@ fun AppNavigation(
         ownerNavGraph(
             navController = navController,
             authViewModel = authViewModel,
-            propertyViewModel = propertyViewModel
+            propertyViewModel = propertyViewModel,
+            roomBedViewModel = roomBedViewModel
         )
     }
 }
@@ -257,9 +271,7 @@ private fun OwnerStatusScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = message,
