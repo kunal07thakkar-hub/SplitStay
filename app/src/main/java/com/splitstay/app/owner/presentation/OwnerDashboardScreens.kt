@@ -34,6 +34,10 @@ private val OwnerOrange = Color(0xFFF59E0B)
 @Composable
 fun OwnerDashboardScreen(
     ownerName: String = "Property Owner",
+    propertyName: String = "",
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     onPropertiesClick: () -> Unit = {},
     onBookingsClick: () -> Unit = {},
     onBedsClick: () -> Unit = {},
@@ -50,6 +54,43 @@ fun OwnerDashboardScreen(
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
+            if (isLoading) {
+                item {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = OwnerBlue
+                    )
+                }
+            }
+
+            if (errorMessage != null) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFFFE4E1)
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                "Unable to load owner profile",
+                                fontWeight = FontWeight.SemiBold,
+                                color = OwnerText
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                errorMessage,
+                                color = Color(0xFF64748B),
+                                fontSize = 13.sp
+                            )
+                            TextButton(onClick = onRetry) {
+                                Text("Try again", color = OwnerBlue)
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -94,6 +135,17 @@ fun OwnerDashboardScreen(
                             color = OwnerText,
                             fontWeight = FontWeight.SemiBold
                         )
+
+                        if (propertyName.isNotBlank()) {
+                            Text(
+                                propertyName,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OwnerBlue,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
                         Text(
                             "Manage your PGs, hostels and bookings from one place.",
                             color = Color(0xFF64748B),
@@ -186,17 +238,19 @@ fun OwnerDashboardScreen(
             }
 
             item {
-                Text(
-                    "Your account approval status",
-                    fontWeight = FontWeight.SemiBold,
-                    color = OwnerText
-                )
-                StatusChip("Pending admin approval", OwnerOrange)
-                Text(
-                    "Property publishing and booking management will be enabled after admin approval.",
-                    color = Color(0xFF64748B),
-                    fontSize = 12.sp
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Your account approval status",
+                        fontWeight = FontWeight.SemiBold,
+                        color = OwnerText
+                    )
+                    StatusChip("Account approved", OwnerGreen)
+                    Text(
+                        "Your account has been approved. You can proceed with property management.",
+                        color = Color(0xFF64748B),
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
 
@@ -374,10 +428,9 @@ fun OwnerAddPropertyScreen(
             }
 
             item {
-                OwnerInputField(
-                    "Property / PG Name",
-                    propertyName
-                ) { propertyName = it }
+                OwnerInputField("Property / PG Name", propertyName) {
+                    propertyName = it
+                }
             }
 
             item {
@@ -416,17 +469,15 @@ fun OwnerAddPropertyScreen(
             }
 
             item {
-                OwnerInputField(
-                    "Complete Address",
-                    address
-                ) { address = it }
+                OwnerInputField("Complete Address", address) {
+                    address = it
+                }
             }
 
             item {
-                OwnerInputField(
-                    "City",
-                    city
-                ) { city = it }
+                OwnerInputField("City", city) {
+                    city = it
+                }
             }
 
             item {
@@ -434,7 +485,9 @@ fun OwnerAddPropertyScreen(
                     "PIN Code",
                     pincode,
                     KeyboardType.Number
-                ) { pincode = it }
+                ) {
+                    pincode = it
+                }
             }
 
             item {
@@ -451,7 +504,9 @@ fun OwnerAddPropertyScreen(
                     "Starting Monthly Rent (₹)",
                     monthlyRent,
                     KeyboardType.Number
-                ) { monthlyRent = it }
+                ) {
+                    monthlyRent = it
+                }
             }
 
             item {
@@ -614,10 +669,7 @@ fun OwnerRoomBedManagementScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            Color.White,
-                            RoundedCornerShape(12.dp)
-                        )
+                        .background(Color.White, RoundedCornerShape(12.dp))
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

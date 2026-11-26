@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,10 +24,14 @@ import androidx.compose.ui.unit.sp
 private val StudentBlue = Color(0xFF2878B8)
 private val StudentBackground = Color(0xFFF8FAFC)
 private val StudentText = Color(0xFF334155)
+private val StudentSecondary = Color(0xFF64748B)
 
 @Composable
 fun StudentDashboardScreen(
     studentName: String = "Student",
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onBookingsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
@@ -39,6 +46,8 @@ fun StudentDashboardScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -48,16 +57,21 @@ fun StudentDashboardScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Hello, $studentName 👋",
+                        text = if (studentName.isBlank()) {
+                            "Hello, Student 👋"
+                        } else {
+                            "Hello, $studentName 👋"
+                        },
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Bold,
                         color = StudentText
                     )
+
                     Text(
                         "Find a place that feels like home.",
-                        color = Color(0xFF64748B),
+                        color = StudentSecondary,
                         fontSize = 13.sp
                     )
                 }
@@ -79,6 +93,52 @@ fun StudentDashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = StudentBlue
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (errorMessage != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFE4E1)
+                    ),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            "Unable to load your profile",
+                            fontWeight = FontWeight.SemiBold,
+                            color = StudentText
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            errorMessage,
+                            color = StudentSecondary,
+                            fontSize = 13.sp
+                        )
+
+                        TextButton(onClick = onRetry) {
+                            Text(
+                                "Try again",
+                                color = StudentBlue
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Text(
                 "Where do you want to stay?",
                 fontSize = 18.sp,
@@ -92,9 +152,14 @@ fun StudentDashboardScreen(
                 value = "",
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text("Search city, area or college") },
+                placeholder = {
+                    Text("Search city, area or college")
+                },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null)
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null
+                    )
                 },
                 trailingIcon = {
                     IconButton(onClick = onSearchClick) {
@@ -122,34 +187,47 @@ fun StudentDashboardScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 item {
                     CategoryCard(
                         "Boys PG",
                         Icons.Default.Male,
                         Color(0xFFEAF4FF)
-                    ) { onSearchClick() }
+                    ) {
+                        onSearchClick()
+                    }
                 }
+
                 item {
                     CategoryCard(
                         "Girls PG",
                         Icons.Default.Female,
                         Color(0xFFEDE9FE)
-                    ) { onSearchClick() }
+                    ) {
+                        onSearchClick()
+                    }
                 }
+
                 item {
                     CategoryCard(
                         "Hostels",
                         Icons.Default.Apartment,
                         Color(0xFFDCFCE7)
-                    ) { onSearchClick() }
+                    ) {
+                        onSearchClick()
+                    }
                 }
+
                 item {
                     CategoryCard(
                         "Shared Rooms",
                         Icons.Default.Bed,
                         Color(0xFFFFE4E1)
-                    ) { onSearchClick() }
+                    ) {
+                        onSearchClick()
+                    }
                 }
             }
 
@@ -166,6 +244,7 @@ fun StudentDashboardScreen(
                     fontWeight = FontWeight.SemiBold,
                     color = StudentText
                 )
+
                 TextButton(onClick = onSearchClick) {
                     Text("See all", color = StudentBlue)
                 }
@@ -182,6 +261,8 @@ fun StudentDashboardScreen(
                 "Comfortable stays, made simple",
                 "Compare rent, facilities and available beds."
             )
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         NavigationBar(
@@ -189,36 +270,57 @@ fun StudentDashboardScreen(
         ) {
             NavigationBarItem(
                 selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
-                icon = { Icon(Icons.Default.Home, null) },
-                label = { Text("Home") }
+                onClick = {
+                    selectedTab = 0
+                },
+                icon = {
+                    Icon(Icons.Default.Home, null)
+                },
+                label = {
+                    Text("Home")
+                }
             )
+
             NavigationBarItem(
                 selected = selectedTab == 1,
                 onClick = {
                     selectedTab = 1
                     onSearchClick()
                 },
-                icon = { Icon(Icons.Default.Search, null) },
-                label = { Text("Explore") }
+                icon = {
+                    Icon(Icons.Default.Search, null)
+                },
+                label = {
+                    Text("Explore")
+                }
             )
+
             NavigationBarItem(
                 selected = selectedTab == 2,
                 onClick = {
                     selectedTab = 2
                     onBookingsClick()
                 },
-                icon = { Icon(Icons.Default.Bookmark, null) },
-                label = { Text("Bookings") }
+                icon = {
+                    Icon(Icons.Default.Bookmark, null)
+                },
+                label = {
+                    Text("Bookings")
+                }
             )
+
             NavigationBarItem(
                 selected = selectedTab == 3,
                 onClick = {
                     selectedTab = 3
                     onProfileClick()
                 },
-                icon = { Icon(Icons.Default.Person, null) },
-                label = { Text("Profile") }
+                icon = {
+                    Icon(Icons.Default.Person, null)
+                },
+                label = {
+                    Text("Profile")
+                }
             )
         }
     }
@@ -227,14 +329,17 @@ fun StudentDashboardScreen(
 @Composable
 private fun CategoryCard(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .width(100.dp)
-            .background(backgroundColor, RoundedCornerShape(18.dp))
+            .background(
+                backgroundColor,
+                RoundedCornerShape(18.dp)
+            )
             .clickable { onClick() }
             .padding(vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -245,7 +350,9 @@ private fun CategoryCard(
             tint = StudentBlue,
             modifier = Modifier.size(28.dp)
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             title,
             fontSize = 12.sp,
@@ -263,19 +370,25 @@ private fun PropertyPlaceholder(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
             Text(
                 title,
                 fontWeight = FontWeight.SemiBold,
                 color = StudentText
             )
+
             Spacer(modifier = Modifier.height(6.dp))
+
             Text(
                 description,
-                color = Color(0xFF64748B),
+                color = StudentSecondary,
                 fontSize = 13.sp
             )
         }

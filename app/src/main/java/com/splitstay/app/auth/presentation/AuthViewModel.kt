@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.splitstay.app.data.remote.UserProfile
 import kotlinx.coroutines.tasks.await
 
 enum class AccountRole {
@@ -58,6 +59,89 @@ class AuthViewModel(
 
     val currentUserEmail: String?
         get() = repository.currentUser?.email
+
+    // Student profile state for the dashboard
+    private val _studentProfile =
+        MutableStateFlow<UserProfile?>(null)
+
+    val studentProfile: StateFlow<UserProfile?> =
+        _studentProfile.asStateFlow()
+
+    private val _isStudentProfileLoading =
+        MutableStateFlow(false)
+
+    val isStudentProfileLoading: StateFlow<Boolean> =
+        _isStudentProfileLoading.asStateFlow()
+
+    private val _studentProfileError =
+        MutableStateFlow<String?>(null)
+
+    val studentProfileError: StateFlow<String?> =
+        _studentProfileError.asStateFlow()
+
+    // Owner profile state for the dashboard
+    private val _ownerProfile =
+        MutableStateFlow<UserProfile?>(null)
+
+    val ownerProfile: StateFlow<UserProfile?> =
+        _ownerProfile.asStateFlow()
+
+    private val _isOwnerProfileLoading =
+        MutableStateFlow(false)
+
+    val isOwnerProfileLoading: StateFlow<Boolean> =
+        _isOwnerProfileLoading.asStateFlow()
+
+    private val _ownerProfileError =
+        MutableStateFlow<String?>(null)
+
+    val ownerProfileError: StateFlow<String?> =
+        _ownerProfileError.asStateFlow()
+
+    fun loadStudentProfile() {
+        viewModelScope.launch {
+            _isStudentProfileLoading.value = true
+            _studentProfileError.value = null
+
+            try {
+                val user = repository.currentUser
+                    ?: throw IllegalStateException(
+                        "Please sign in again."
+                    )
+
+                user.reload()
+
+                if (!user.isEmailVerified) {
+                    throw IllegalStateException(
+                        "Please verify your email first."
+                    )
+                }
+
+                val profile = userRepository.getUserProfile(user.uid)
+                    ?: throw IllegalStateException(
+                        "Student profile not found."
+                    )
+
+                if (profile.role != "STUDENT" ||
+                    profile.accountStatus != "ACTIVE"
+                ) {
+                    throw IllegalStateException(
+                        "This account is not an active student account."
+                    )
+                }
+
+                _studentProfile.value = profile
+
+            } catch (exception: Exception) {
+                _studentProfileError.value =
+                    exception.localizedMessage
+                        ?: "Could not load your profile."
+
+            } finally {
+                _isStudentProfileLoading.value = false
+            }
+        }
+    }
 
     // -----------------------------------------
     // STUDENT REGISTRATION
@@ -355,6 +439,54 @@ class AuthViewModel(
         }
     }
 
+    fun loadOwnerProfile() {
+        viewModelScope.launch {
+            _isOwnerProfileLoading.value = true
+            _ownerProfileError.value = null
+
+            try {
+                val user = repository.currentUser
+                    ?: throw IllegalStateException(
+                        "Please sign in again."
+                    )
+
+                user.reload()
+
+                if (!user.isEmailVerified) {
+                    throw IllegalStateException(
+                        "Please verify your email first."
+                    )
+                }
+
+                val profile = userRepository.getUserProfile(user.uid)
+                    ?: throw IllegalStateException(
+                        "Owner profile not found."
+                    )
+
+                if (profile.role != "OWNER") {
+                    throw IllegalStateException(
+                        "This account is not an owner account."
+                    )
+                }
+
+                if (profile.accountStatus != "APPROVED") {
+                    throw IllegalStateException(
+                        "Your owner account is not approved yet."
+                    )
+                }
+
+                _ownerProfile.value = profile
+
+            } catch (exception: Exception) {
+                _ownerProfileError.value =
+                    exception.localizedMessage
+                        ?: "Could not load your owner profile."
+
+            } finally {
+                _isOwnerProfileLoading.value = false
+            }
+        }
+    }
     // -----------------------------------------
     // PHONE NUMBER NORMALIZATION
     // -----------------------------------------
@@ -386,4 +518,6 @@ class AuthViewModel(
     fun resetState() {
         _uiState.value = AuthUiState.Idle
     }
+
+
 }

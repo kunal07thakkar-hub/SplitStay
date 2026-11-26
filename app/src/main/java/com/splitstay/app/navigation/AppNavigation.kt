@@ -223,8 +223,12 @@ fun AppNavigation(
         }
 
         // Existing dashboard graphs
-        studentNavGraph()
-        ownerNavGraph()
+        studentNavGraph(
+            authViewModel = authViewModel
+        )
+        ownerNavGraph(
+            authViewModel = authViewModel
+        )
     }
 }
 
