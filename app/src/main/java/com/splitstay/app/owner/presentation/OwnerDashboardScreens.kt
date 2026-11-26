@@ -1,4 +1,3 @@
-
 package com.splitstay.app.owner.presentation
 
 import androidx.compose.foundation.background
@@ -20,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.splitstay.app.property.data.PropertyListing
+import com.splitstay.app.property.data.PropertyDraft
 
 private val OwnerBlue = Color(0xFF2878B8)
 private val OwnerBackground = Color(0xFFF8FAFC)
@@ -35,6 +36,7 @@ private val OwnerOrange = Color(0xFFF59E0B)
 fun OwnerDashboardScreen(
     ownerName: String = "Property Owner",
     propertyName: String = "",
+    propertyCount: Int = 0,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
@@ -71,20 +73,32 @@ fun OwnerDashboardScreen(
                         ),
                         shape = RoundedCornerShape(14.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
                             Text(
-                                "Unable to load owner profile",
+                                "Unable to load owner information",
                                 fontWeight = FontWeight.SemiBold,
                                 color = OwnerText
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Spacer(
+                                modifier = Modifier.height(6.dp)
+                            )
+
                             Text(
                                 errorMessage,
                                 color = Color(0xFF64748B),
                                 fontSize = 13.sp
                             )
-                            TextButton(onClick = onRetry) {
-                                Text("Try again", color = OwnerBlue)
+
+                            TextButton(
+                                onClick = onRetry
+                            ) {
+                                Text(
+                                    "Try again",
+                                    color = OwnerBlue
+                                )
                             }
                         }
                     }
@@ -104,6 +118,7 @@ fun OwnerDashboardScreen(
                             fontWeight = FontWeight.Bold,
                             color = OwnerText
                         )
+
                         Text(
                             "Here's your property overview.",
                             color = Color(0xFF64748B),
@@ -111,7 +126,9 @@ fun OwnerDashboardScreen(
                         )
                     }
 
-                    IconButton(onClick = onProfileClick) {
+                    IconButton(
+                        onClick = onProfileClick
+                    ) {
                         Icon(
                             Icons.Default.AccountCircle,
                             contentDescription = "Profile",
@@ -129,7 +146,9 @@ fun OwnerDashboardScreen(
                     ),
                     shape = RoundedCornerShape(18.dp)
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
+                    Column(
+                        modifier = Modifier.padding(18.dp)
+                    ) {
                         Text(
                             "Your Property Business",
                             color = OwnerText,
@@ -166,14 +185,19 @@ fun OwnerDashboardScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         OwnerStatCard(
                             "Properties",
-                            "0",
+                            propertyCount.toString(),
                             Icons.Default.Apartment,
                             Modifier.weight(1f)
                         )
+
                         OwnerStatCard(
                             "Total Beds",
                             "0",
@@ -182,13 +206,16 @@ fun OwnerDashboardScreen(
                         )
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         OwnerStatCard(
                             "Occupied",
                             "0",
                             Icons.Default.People,
                             Modifier.weight(1f)
                         )
+
                         OwnerStatCard(
                             "Available",
                             "0",
@@ -209,25 +236,30 @@ fun OwnerDashboardScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     OwnerActionItem(
                         Icons.Default.Apartment,
                         "My Properties",
                         "Manage your listed properties",
                         onPropertiesClick
                     )
+
                     OwnerActionItem(
                         Icons.Default.Bookmark,
                         "Booking Requests",
                         "Review student booking requests",
                         onBookingsClick
                     )
+
                     OwnerActionItem(
                         Icons.Default.Bed,
                         "Room & Bed Management",
                         "Manage rooms and availability",
                         onBedsClick
                     )
+
                     OwnerActionItem(
                         Icons.Default.AccountBalanceWallet,
                         "Earnings",
@@ -236,49 +268,6 @@ fun OwnerDashboardScreen(
                     )
                 }
             }
-
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Your account approval status",
-                        fontWeight = FontWeight.SemiBold,
-                        color = OwnerText
-                    )
-                    StatusChip("Account approved", OwnerGreen)
-                    Text(
-                        "Your account has been approved. You can proceed with property management.",
-                        color = Color(0xFF64748B),
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        }
-
-        NavigationBar(containerColor = Color.White) {
-            NavigationBarItem(
-                selected = true,
-                onClick = {},
-                icon = { Icon(Icons.Default.Home, null) },
-                label = { Text("Home") }
-            )
-            NavigationBarItem(
-                selected = false,
-                onClick = onPropertiesClick,
-                icon = { Icon(Icons.Default.Apartment, null) },
-                label = { Text("Properties") }
-            )
-            NavigationBarItem(
-                selected = false,
-                onClick = onBookingsClick,
-                icon = { Icon(Icons.Default.Bookmark, null) },
-                label = { Text("Bookings") }
-            )
-            NavigationBarItem(
-                selected = false,
-                onClick = onProfileClick,
-                icon = { Icon(Icons.Default.Person, null) },
-                label = { Text("Profile") }
-            )
         }
     }
 }
@@ -289,97 +278,331 @@ fun OwnerDashboardScreen(
 
 @Composable
 fun OwnerMyPropertiesScreen(
-    onAddProperty: () -> Unit = {},
-    onPropertyClick: (String) -> Unit = {}
+    properties: List<PropertyListing>,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    onAddProperty: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(OwnerBackground)
-            .padding(20.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "My Properties",
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                color = OwnerText
-            )
-
-            IconButton(onClick = onAddProperty) {
-                Icon(
-                    Icons.Default.AddCircle,
-                    contentDescription = "Add property",
-                    tint = OwnerBlue,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-
-        Text(
-            "Manage all your PGs and hostels.",
-            color = Color(0xFF64748B),
-            fontSize = 13.sp,
-            modifier = Modifier.padding(top = 5.dp, bottom = 22.dp)
-        )
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    Icons.Default.Apartment,
-                    contentDescription = null,
-                    tint = OwnerBlue,
-                    modifier = Modifier.size(64.dp)
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
+            Column {
                 Text(
-                    "No properties added yet",
-                    fontWeight = FontWeight.SemiBold,
+                    "My Properties",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
                     color = OwnerText
                 )
 
                 Text(
-                    "Add your first PG or hostel to get started.",
-                    color = Color(0xFF64748B),
+                    "Manage your PGs and hostels",
                     fontSize = 13.sp,
-                    modifier = Modifier.padding(top = 6.dp)
+                    color = Color(0xFF64748B)
+                )
+            }
+
+            FilledTonalButton(
+                onClick = onAddProperty,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = Color(0xFFDCEBFA),
+                    contentColor = OwnerBlue
+                )
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(
+                    modifier = Modifier.width(4.dp)
+                )
 
-                Button(
-                    onClick = onAddProperty,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OwnerBlue
-                    ),
-                    shape = RoundedCornerShape(14.dp)
+                Text("Add")
+            }
+        }
+
+        when {
+            isLoading && properties.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Add, null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Add Property")
+                    CircularProgressIndicator(
+                        color = OwnerBlue
+                    )
+                }
+            }
+
+            errorMessage != null && properties.isEmpty() -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.CloudOff,
+                        contentDescription = null,
+                        tint = OwnerOrange,
+                        modifier = Modifier.size(42.dp)
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Text(
+                        "Unable to load properties",
+                        fontWeight = FontWeight.SemiBold,
+                        color = OwnerText
+                    )
+
+                    Text(
+                        errorMessage,
+                        color = Color(0xFF64748B),
+                        fontSize = 13.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OwnerBlue
+                        )
+                    ) {
+                        Text("Try again")
+                    }
+                }
+            }
+
+            properties.isEmpty() -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.Apartment,
+                        contentDescription = null,
+                        tint = OwnerBlue,
+                        modifier = Modifier.size(58.dp)
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    Text(
+                        "No properties yet",
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OwnerText
+                    )
+
+                    Text(
+                        "Add your first PG, hostel or apartment to get started.",
+                        color = Color(0xFF64748B),
+                        fontSize = 14.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    Button(
+                        onClick = onAddProperty,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OwnerBlue
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null
+                        )
+
+                        Spacer(
+                            modifier = Modifier.width(6.dp)
+                        )
+
+                        Text("Add Property")
+                    }
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 20.dp,
+                        end = 20.dp,
+                        top = 4.dp,
+                        bottom = 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    items(
+                        items = properties,
+                        key = { it.id }
+                    ) { property ->
+                        PropertyListingCard(
+                            property = property
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun PropertyListingCard(
+    property: PropertyListing
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        property.propertyName,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OwnerText
+                    )
+
+                    Text(
+                        "${property.propertyType} • ${property.genderPreference}",
+                        fontSize = 12.sp,
+                        color = OwnerBlue
+                    )
+                }
+
+                Surface(
+                    color = Color(0xFFDCFCE7),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(
+                        "Listed",
+                        color = Color(0xFF15803D),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(
+                            horizontal = 10.dp,
+                            vertical = 5.dp
+                        )
+                    )
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = Color(0xFF64748B),
+                    modifier = Modifier.size(17.dp)
+                )
+
+                Spacer(
+                    modifier = Modifier.width(5.dp)
+                )
+
+                Text(
+                    "${property.address}, ${property.city} - ${property.pincode}",
+                    fontSize = 12.sp,
+                    color = Color(0xFF64748B)
+                )
+            }
+
+            if (property.description.isNotBlank()) {
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
+                    property.description,
+                    fontSize = 13.sp,
+                    color = OwnerText
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = Color(0xFFE2E8F0)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Monthly rent",
+                    color = Color(0xFF64748B),
+                    fontSize = 12.sp
+                )
+
+                Text(
+                    "₹${property.monthlyRent.toInt()} / month",
+                    color = OwnerBlue,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+        }
+    }
+}
+
 // --------------------------------------------------
-// 3. ADD / EDIT PROPERTY
+// 3. ADD PROPERTY
 // --------------------------------------------------
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OwnerAddPropertyScreen(
-    onSaveProperty: () -> Unit = {},
-    onBack: () -> Unit = {}
+    isSaving: Boolean,
+    errorMessage: String?,
+    onSaveProperty: (PropertyDraft) -> Unit,
+    onBack: () -> Unit
 ) {
     var propertyName by remember { mutableStateOf("") }
     var propertyType by remember { mutableStateOf("PG") }
@@ -389,9 +612,23 @@ fun OwnerAddPropertyScreen(
     var pincode by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var monthlyRent by remember { mutableStateOf("") }
+    var expandedType by remember { mutableStateOf(false) }
+    var expandedGender by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
-    val propertyTypes = listOf("PG", "Hostel", "Apartment")
-    val genderTypes = listOf("Boys", "Girls", "Co-living")
+    val propertyTypes = listOf(
+        "PG",
+        "Hostel",
+        "Apartment",
+        "Flat",
+        "Co-living"
+    )
+
+    val genderOptions = listOf(
+        "Boys",
+        "Girls",
+        "Unisex"
+    )
 
     Column(
         modifier = Modifier
@@ -399,158 +636,392 @@ fun OwnerAddPropertyScreen(
             .background(OwnerBackground)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, null)
+            IconButton(
+                onClick = onBack,
+                enabled = !isSaving
+            ) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = OwnerText
+                )
             }
-            Text(
-                "Add Property",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = OwnerText
-            )
+
+            Column {
+                Text(
+                    "Add Property",
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OwnerText
+                )
+
+                Text(
+                    "Enter your property details",
+                    fontSize = 12.sp,
+                    color = Color(0xFF64748B)
+                )
+            }
         }
+
+        HorizontalDivider(
+            color = Color(0xFFE2E8F0)
+        )
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(horizontal = 20.dp),
+            contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
                 Text(
-                    "Property Information",
+                    "Basic information",
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = OwnerText
-                )
-            }
-
-            item {
-                OwnerInputField("Property / PG Name", propertyName) {
-                    propertyName = it
-                }
-            }
-
-            item {
-                Text("Property Type", fontWeight = FontWeight.SemiBold)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    propertyTypes.forEach { type ->
-                        FilterChip(
-                            selected = propertyType == type,
-                            onClick = { propertyType = type },
-                            label = { Text(type) }
-                        )
-                    }
-                }
-            }
-
-            item {
-                Text("Accommodation Type", fontWeight = FontWeight.SemiBold)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    genderTypes.forEach { type ->
-                        FilterChip(
-                            selected = genderPreference == type,
-                            onClick = { genderPreference = type },
-                            label = { Text(type) }
-                        )
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    "Property Location",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = OwnerText
-                )
-            }
-
-            item {
-                OwnerInputField("Complete Address", address) {
-                    address = it
-                }
-            }
-
-            item {
-                OwnerInputField("City", city) {
-                    city = it
-                }
-            }
-
-            item {
-                OwnerInputField(
-                    "PIN Code",
-                    pincode,
-                    KeyboardType.Number
-                ) {
-                    pincode = it
-                }
-            }
-
-            item {
-                Text(
-                    "Rent & Description",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
                     color = OwnerText
                 )
             }
 
             item {
                 OwnerInputField(
-                    "Starting Monthly Rent (₹)",
-                    monthlyRent,
-                    KeyboardType.Number
+                    value = propertyName,
+                    onValueChange = {
+                        propertyName = it
+                        validationError = null
+                    },
+                    label = "Property name",
+                    placeholder = "e.g. Sunrise Boys PG"
+                )
+            }
+
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = expandedType,
+                    onExpandedChange = {
+                        expandedType = !expandedType
+                    }
                 ) {
-                    monthlyRent = it
+                    OutlinedTextField(
+                        value = propertyType,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            Text("Property type")
+                        },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = expandedType
+                            )
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = OwnerBlue
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedType,
+                        onDismissRequest = {
+                            expandedType = false
+                        }
+                    ) {
+                        propertyTypes.forEach { type ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(type)
+                                },
+                                onClick = {
+                                    propertyType = type
+                                    expandedType = false
+                                }
+                            )
+                        }
+                    }
                 }
+            }
+
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = expandedGender,
+                    onExpandedChange = {
+                        expandedGender = !expandedGender
+                    }
+                ) {
+                    OutlinedTextField(
+                        value = genderPreference,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            Text("Suitable for")
+                        },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = expandedGender
+                            )
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = OwnerBlue
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedGender,
+                        onDismissRequest = {
+                            expandedGender = false
+                        }
+                    ) {
+                        genderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(option)
+                                },
+                                onClick = {
+                                    genderPreference = option
+                                    expandedGender = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    "Location details",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OwnerText
+                )
+            }
+
+            item {
+                OwnerInputField(
+                    value = address,
+                    onValueChange = {
+                        address = it
+                        validationError = null
+                    },
+                    label = "Full address",
+                    placeholder = "House number, street, area"
+                )
+            }
+
+            item {
+                OwnerInputField(
+                    value = city,
+                    onValueChange = {
+                        city = it
+                        validationError = null
+                    },
+                    label = "City",
+                    placeholder = "e.g. Ahmedabad"
+                )
+            }
+
+            item {
+                OwnerInputField(
+                    value = pincode,
+                    onValueChange = {
+                        if (it.length <= 6 && it.all(Char::isDigit)) {
+                            pincode = it
+                            validationError = null
+                        }
+                    },
+                    label = "PIN code",
+                    placeholder = "6-digit PIN code",
+                    keyboardType = KeyboardType.Number
+                )
+            }
+
+            item {
+                Text(
+                    "Rent and description",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OwnerText
+                )
+            }
+
+            item {
+                OwnerInputField(
+                    value = monthlyRent,
+                    onValueChange = {
+                        monthlyRent = it
+                        validationError = null
+                    },
+                    label = "Monthly rent (₹)",
+                    placeholder = "e.g. 6500",
+                    keyboardType = KeyboardType.Decimal
+                )
             }
 
             item {
                 OutlinedTextField(
                     value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Property Description") },
+                    onValueChange = {
+                        description = it
+                    },
+                    label = {
+                        Text("Description (optional)")
+                    },
+                    placeholder = {
+                        Text("Tell students about your property")
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
-                    shape = RoundedCornerShape(12.dp)
+                    maxLines = 5,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OwnerBlue
+                    )
                 )
             }
 
             item {
-                Text(
-                    "Property Photos",
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                OutlinedButton(
-                    onClick = {
-                        // Photo picker will be connected later.
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFEAF4FF)
+                    ),
+                    shape = RoundedCornerShape(14.dp)
                 ) {
-                    Icon(Icons.Default.AddPhotoAlternate, null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Upload Property Photos")
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = OwnerBlue
+                        )
+
+                        Spacer(
+                            modifier = Modifier.width(10.dp)
+                        )
+
+                        Text(
+                            "Property photos will be available in a later update. This version saves property details only.",
+                            color = OwnerText,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
-        }
 
-        Button(
-            onClick = onSaveProperty,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-                .height(52.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OwnerBlue
-            )
-        ) {
-            Text("Save Property Details")
+            if (validationError != null) {
+                item {
+                    Text(
+                        validationError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            if (errorMessage != null) {
+                item {
+                    Text(
+                        errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        val rentValue = monthlyRent.toDoubleOrNull()
+
+                        when {
+                            propertyName.isBlank() -> {
+                                validationError =
+                                    "Please enter the property name."
+                            }
+
+                            address.isBlank() -> {
+                                validationError =
+                                    "Please enter the full address."
+                            }
+
+                            city.isBlank() -> {
+                                validationError =
+                                    "Please enter the city."
+                            }
+
+                            pincode.length != 6 -> {
+                                validationError =
+                                    "Please enter a valid 6-digit PIN code."
+                            }
+
+                            rentValue == null || rentValue <= 0.0 -> {
+                                validationError =
+                                    "Please enter a valid monthly rent."
+                            }
+
+                            else -> {
+                                validationError = null
+
+                                onSaveProperty(
+                                    PropertyDraft(
+                                        propertyName = propertyName.trim(),
+                                        propertyType = propertyType,
+                                        genderPreference = genderPreference,
+                                        address = address.trim(),
+                                        city = city.trim(),
+                                        pincode = pincode,
+                                        description = description.trim(),
+                                        monthlyRent = rentValue
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    enabled = !isSaving,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OwnerBlue
+                    )
+                ) {
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+
+                        Spacer(
+                            modifier = Modifier.width(10.dp)
+                        )
+
+                        Text("Saving...")
+                    } else {
+                        Icon(
+                            Icons.Default.Save,
+                            contentDescription = null
+                        )
+
+                        Spacer(
+                            modifier = Modifier.width(8.dp)
+                        )
+
+                        Text("Save Property")
+                    }
+                }
+            }
         }
     }
 }
@@ -561,161 +1032,123 @@ fun OwnerAddPropertyScreen(
 
 @Composable
 fun OwnerRoomBedManagementScreen(
-    onAddRoom: () -> Unit = {},
-    onSaveChanges: () -> Unit = {}
+    onBack: () -> Unit = {}
 ) {
-    var roomName by remember { mutableStateOf("Room A") }
-    var bedCount by remember { mutableIntStateOf(4) }
+    var selectedTab by remember {
+        mutableStateOf("Rooms")
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(OwnerBackground)
-            .padding(20.dp)
     ) {
-        Text(
-            "Room & Bed Management",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = OwnerText
-        )
-
-        Text(
-            "Manage room layouts and bed availability.",
-            color = Color(0xFF64748B),
-            fontSize = 13.sp,
-            modifier = Modifier.padding(top = 6.dp, bottom = 20.dp)
-        )
-
-        Card(
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            shape = RoundedCornerShape(18.dp)
-        ) {
-            Column(modifier = Modifier.padding(18.dp)) {
-                Text(
-                    "Room Configuration",
-                    fontWeight = FontWeight.Bold,
-                    color = OwnerText
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = roomName,
-                    onValueChange = { roomName = it },
-                    label = { Text("Room Name / Number") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text("Number of Beds", fontWeight = FontWeight.SemiBold)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = {
-                            if (bedCount > 1) bedCount--
-                        }
-                    ) {
-                        Icon(Icons.Default.RemoveCircleOutline, null)
-                    }
-
-                    Text(
-                        "$bedCount Beds",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OwnerBlue
-                    )
-
-                    IconButton(
-                        onClick = {
-                            if (bedCount < 20) bedCount++
-                        }
-                    ) {
-                        Icon(Icons.Default.AddCircleOutline, null)
-                    }
-                }
-
-                Button(
-                    onClick = onAddRoom,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OwnerBlue
-                    )
-                ) {
-                    Text("Add Room")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            "Bed Availability Preview",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = OwnerText
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            repeat(bedCount) { index ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Bed,
-                        null,
-                        tint = OwnerGreen
-                    )
-
-                    Text(
-                        "Bed ${index + 1}",
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 12.dp),
-                        color = OwnerText,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Text(
-                        "Available",
-                        color = OwnerGreen,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = onSaveChanges,
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OwnerBlue
-            ),
-            shape = RoundedCornerShape(14.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Save Room & Bed Configuration")
+            IconButton(
+                onClick = onBack
+            ) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+
+            Text(
+                "Room & Bed Management",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = OwnerText
+            )
+        }
+
+        TabRow(
+            selectedTabIndex = if (selectedTab == "Rooms") 0 else 1,
+            containerColor = Color.White,
+            contentColor = OwnerBlue
+        ) {
+            listOf("Rooms", "Beds").forEach { tab ->
+                Tab(
+                    selected = selectedTab == tab,
+                    onClick = {
+                        selectedTab = tab
+                    },
+                    text = {
+                        Text(tab)
+                    }
+                )
+            }
+        }
+
+        if (selectedTab == "Rooms") {
+            EmptyManagementState(
+                title = "Room management",
+                message = "Room creation and editing will be connected to your property in a later milestone.",
+                icon = Icons.Default.MeetingRoom
+            )
+        } else {
+            EmptyManagementState(
+                title = "Bed management",
+                message = "Bed availability and occupancy management will be connected in a later milestone.",
+                icon = Icons.Default.Bed
+            )
         }
     }
 }
 
 // --------------------------------------------------
-// SHARED COMPONENTS
+// 5. EMPTY MANAGEMENT STATE
+// --------------------------------------------------
+
+@Composable
+private fun EmptyManagementState(
+    title: String,
+    message: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = OwnerBlue,
+            modifier = Modifier.size(54.dp)
+        )
+
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        Text(
+            title,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.Bold,
+            color = OwnerText
+        )
+
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
+
+        Text(
+            message,
+            fontSize = 13.sp,
+            color = Color(0xFF64748B)
+        )
+    }
+}
+
+// --------------------------------------------------
+// 6. OWNER STAT CARD
 // --------------------------------------------------
 
 @Composable
@@ -727,18 +1160,35 @@ private fun OwnerStatCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Icon(icon, null, tint = OwnerBlue)
+        Column(
+            modifier = Modifier.padding(14.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = OwnerBlue,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
             Text(
                 value,
-                fontSize = 25.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = OwnerText,
-                modifier = Modifier.padding(top = 8.dp)
+                color = OwnerText
             )
+
             Text(
                 title,
                 fontSize = 12.sp,
@@ -747,6 +1197,10 @@ private fun OwnerStatCard(
         }
     }
 }
+
+// --------------------------------------------------
+// 7. OWNER ACTION ITEM
+// --------------------------------------------------
 
 @Composable
 private fun OwnerActionItem(
@@ -758,67 +1212,124 @@ private fun OwnerActionItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, tint = OwnerBlue)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 14.dp)
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFEAF4FF)
             ) {
-                Text(title, fontWeight = FontWeight.SemiBold, color = OwnerText)
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = OwnerBlue,
+                    modifier = Modifier
+                        .padding(11.dp)
+                        .size(23.dp)
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.width(13.dp)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    title,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OwnerText,
+                    fontSize = 14.sp
+                )
+
                 Text(
                     subtitle,
                     color = Color(0xFF64748B),
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             }
-            Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
+
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Color(0xFF94A3B8)
+            )
         }
     }
 }
 
+// --------------------------------------------------
+// 8. OWNER INPUT FIELD
+// --------------------------------------------------
+
 @Composable
 private fun OwnerInputField(
-    label: String,
     value: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String = "",
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = {
+            Text(label)
+        },
+        placeholder = {
+            Text(placeholder)
+        },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
-        shape = RoundedCornerShape(12.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
+        ),
+        shape = RoundedCornerShape(14.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = OwnerBlue
+        )
     )
 }
 
+// --------------------------------------------------
+// 9. STATUS CHIP
+// --------------------------------------------------
+
 @Composable
 private fun StatusChip(
-    title: String,
-    color: Color
+    status: String
 ) {
+    val chipColor = when (status.uppercase()) {
+        "AVAILABLE" -> OwnerGreen
+        "NOTICE" -> OwnerOrange
+        "LOCKED" -> Color(0xFFF97316)
+        "OCCUPIED" -> Color(0xFF94A3B8)
+        else -> OwnerBlue
+    }
+
     Surface(
-        color = color.copy(alpha = 0.12f),
-        shape = RoundedCornerShape(20.dp)
+        color = chipColor.copy(alpha = 0.12f),
+        shape = RoundedCornerShape(50)
     ) {
         Text(
-            title,
-            color = color,
-            fontSize = 12.sp,
+            status,
+            color = chipColor,
+            fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(
-                horizontal = 12.dp,
-                vertical = 7.dp
+                horizontal = 10.dp,
+                vertical = 5.dp
             )
         )
     }

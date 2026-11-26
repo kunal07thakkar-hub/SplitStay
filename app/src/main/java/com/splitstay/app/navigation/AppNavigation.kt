@@ -1,42 +1,50 @@
-
 package com.splitstay.app.navigation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.splitstay.app.auth.presentation.OwnerKycScreen
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.splitstay.app.owner.presentation.OwnerApplicationStatusScreen
-import com.splitstay.app.kyc.presentation.KycViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
-import com.splitstay.app.admin.presentation.AdminReviewDashboardScreen
-import com.splitstay.app.kyc.data.LocalKycRepository
-import com.splitstay.app.kyc.presentation.KycViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.splitstay.app.RoleSelectionScreen
 import com.splitstay.app.SplitStaySplashScreen
+import com.splitstay.app.admin.presentation.AdminReviewDashboardScreen
 import com.splitstay.app.auth.presentation.AuthUiState
 import com.splitstay.app.auth.presentation.AuthViewModel
 import com.splitstay.app.auth.presentation.AuthViewModelFactory
 import com.splitstay.app.auth.presentation.EmailVerificationScreen
+import com.splitstay.app.auth.presentation.OwnerKycScreen
+import com.splitstay.app.kyc.data.LocalKycRepository
+import com.splitstay.app.kyc.presentation.KycViewModel
+import com.splitstay.app.kyc.presentation.KycViewModelFactory
+import com.splitstay.app.owner.presentation.OwnerApplicationStatusScreen
+import com.splitstay.app.property.data.PropertyRepository
+import com.splitstay.app.property.presentation.PropertyViewModel
+import com.splitstay.app.property.presentation.PropertyViewModelFactory
 
 @Composable
 fun AppNavigation(
     internetAvailable: Boolean
 ) {
     val navController = rememberNavController()
-
     val context = LocalContext.current
 
     val kycViewModel: KycViewModel = viewModel(
@@ -44,16 +52,24 @@ fun AppNavigation(
             LocalKycRepository(context.applicationContext)
         )
     )
+
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory()
+    )
+
+    val propertyRepository = PropertyRepository(
+        firestore = FirebaseFirestore.getInstance(),
+        firebaseAuth = FirebaseAuth.getInstance()
+    )
+
+    val propertyViewModel: PropertyViewModel = viewModel(
+        factory = PropertyViewModelFactory(propertyRepository)
     )
 
     NavHost(
         navController = navController,
         startDestination = Splash
     ) {
-
-        // Splash
         composable<Splash> {
             SplitStaySplashScreen(
                 internetAvailable = internetAvailable,
@@ -68,7 +84,8 @@ fun AppNavigation(
         }
 
         composable<AdminDashboard> {
-            val application by kycViewModel.application.collectAsState()
+            val application by
+            kycViewModel.application.collectAsState()
 
             AdminReviewDashboardScreen(
                 application = application,
@@ -84,7 +101,6 @@ fun AppNavigation(
             )
         }
 
-        // Role selection
         composable<RoleSelection> {
             RoleSelectionScreen(
                 onStudentClick = {
@@ -96,16 +112,13 @@ fun AppNavigation(
             )
         }
 
-        // Authentication
         authNavGraph(
             authViewModel = authViewModel,
-
             onRegistrationNeedsVerification = {
                 navController.navigate(EmailVerification) {
                     launchSingleTop = true
                 }
             },
-
             onStudentReady = {
                 navController.navigate(StudentHome) {
                     popUpTo<AuthGraph> {
@@ -113,7 +126,6 @@ fun AppNavigation(
                     }
                 }
             },
-
             onOwnerKycRequired = {
                 navController.navigate(OwnerKycRequired) {
                     popUpTo<AuthGraph> {
@@ -121,7 +133,6 @@ fun AppNavigation(
                     }
                 }
             },
-
             onOwnerPendingApproval = {
                 navController.navigate(OwnerPendingApproval) {
                     popUpTo<AuthGraph> {
@@ -129,7 +140,6 @@ fun AppNavigation(
                     }
                 }
             },
-
             onOwnerReady = {
                 navController.navigate(OwnerHome) {
                     popUpTo<AuthGraph> {
@@ -139,26 +149,27 @@ fun AppNavigation(
             }
         )
 
-        // Email verification
         composable<EmailVerification> {
-
-            val uiState by authViewModel.uiState.collectAsState()
+            val uiState by
+            authViewModel.uiState.collectAsState()
 
             LaunchedEffect(uiState) {
                 when (uiState) {
-                    AuthUiState.StudentProfileReady ->
+                    AuthUiState.StudentProfileReady -> {
                         navController.navigate(StudentHome) {
                             popUpTo<AuthGraph> {
                                 inclusive = true
                             }
                         }
+                    }
 
-                    AuthUiState.OwnerKycRequired ->
+                    AuthUiState.OwnerKycRequired -> {
                         navController.navigate(OwnerKycRequired) {
                             popUpTo<AuthGraph> {
                                 inclusive = true
                             }
                         }
+                    }
 
                     else -> Unit
                 }
@@ -166,24 +177,15 @@ fun AppNavigation(
 
             EmailVerificationScreen(
                 email = authViewModel.currentUserEmail ?: "",
-
-                isVerified =
-                    uiState is AuthUiState.EmailVerified,
-
-                isLoading =
-                    uiState is AuthUiState.Loading,
-
-                errorMessage =
-                    (uiState as? AuthUiState.Error)?.message,
-
+                isVerified = uiState is AuthUiState.EmailVerified,
+                isLoading = uiState is AuthUiState.Loading,
+                errorMessage = (uiState as? AuthUiState.Error)?.message,
                 onResendEmail = {
                     authViewModel.resendVerificationEmail()
                 },
-
                 onCheckVerification = {
                     authViewModel.checkEmailVerification()
                 },
-
                 onContinue = {
                     if (uiState is AuthUiState.EmailVerified) {
                         authViewModel.completeEmailVerification()
@@ -192,7 +194,6 @@ fun AppNavigation(
             )
         }
 
-        // Actual Owner KYC form
         composable<OwnerKycRequired> {
             OwnerKycScreen(
                 kycViewModel = kycViewModel,
@@ -208,9 +209,9 @@ fun AppNavigation(
             )
         }
 
-        // Owner approval waiting screen.
         composable<OwnerPendingApproval> {
-            val application by kycViewModel.application.collectAsState()
+            val application by
+            kycViewModel.application.collectAsState()
 
             OwnerApplicationStatusScreen(
                 application = application,
@@ -222,12 +223,14 @@ fun AppNavigation(
             )
         }
 
-        // Existing dashboard graphs
         studentNavGraph(
             authViewModel = authViewModel
         )
+
         ownerNavGraph(
-            authViewModel = authViewModel
+            navController = navController,
+            authViewModel = authViewModel,
+            propertyViewModel = propertyViewModel
         )
     }
 }
@@ -254,7 +257,9 @@ private fun OwnerStatusScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
             Text(
                 text = message,
