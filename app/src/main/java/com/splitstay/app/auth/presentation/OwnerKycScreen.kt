@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.splitstay.app.kyc.data.KycApplication
+import com.splitstay.app.kyc.presentation.KycViewModel
+import kotlinx.coroutines.launch
 
 private val KycBlue = Color(0xFF2878B8)
 private val KycBackground = Color(0xFFF8FAFC)
@@ -28,19 +31,28 @@ private val KycBorder = Color(0xFFE2E8F0)
 
 @Composable
 fun OwnerKycScreen(
+    kycViewModel: KycViewModel,
     onSubmitKyc: () -> Unit = {}
 ) {
-    var ownerName by remember { mutableStateOf("") }
-    var propertyName by remember { mutableStateOf("") }
-    var propertyType by remember { mutableStateOf("PG") }
-    var propertyAddress by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var pincode by remember { mutableStateOf("") }
-    var identityType by remember { mutableStateOf("PAN Card") }
+    val savedApplication by kycViewModel.application.collectAsState()
+
+    var ownerName by remember { mutableStateOf(savedApplication.ownerName) }
+    var propertyName by remember { mutableStateOf(savedApplication.propertyName) }
+    var propertyType by remember { mutableStateOf(savedApplication.propertyType) }
+    var propertyAddress by remember { mutableStateOf(savedApplication.propertyAddress) }
+    var city by remember { mutableStateOf(savedApplication.city) }
+    var pincode by remember { mutableStateOf(savedApplication.pincode) }
+    var identityType by remember { mutableStateOf(savedApplication.identityType) }
     var identityLastFour by remember { mutableStateOf("") }
 
     var identityDocument by remember { mutableStateOf<Uri?>(null) }
+    var hasIdentityDocument by remember {
+        mutableStateOf(savedApplication.documentSelected)
+    }
     var propertyPhotos by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var savedPhotoCount by remember {
+        mutableIntStateOf(savedApplication.propertyPhotoCount)
+    }
 
     var showError by remember { mutableStateOf(false) }
     var showConfirmation by remember { mutableStateOf(false) }
@@ -48,13 +60,25 @@ fun OwnerKycScreen(
     val documentPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        if (uri != null) identityDocument = uri
+        if (uri != null) {
+            identityDocument = uri
+            hasIdentityDocument = true
+        }
     }
 
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
-        propertyPhotos = uris
+        if (uris.isNotEmpty()) {
+            propertyPhotos = uris
+            savedPhotoCount = uris.size
+        }
+    }
+
+    val photoCount = if (propertyPhotos.isNotEmpty()) {
+        propertyPhotos.size
+    } else {
+        savedPhotoCount
     }
 
     val isFormValid =
@@ -64,8 +88,37 @@ fun OwnerKycScreen(
                 city.isNotBlank() &&
                 pincode.length == 6 &&
                 identityLastFour.length == 4 &&
-                identityDocument != null &&
-                propertyPhotos.isNotEmpty()
+                hasIdentityDocument &&
+                photoCount > 0
+
+    // Automatically save non-sensitive form details as a local draft.
+    // Identity number characters and actual file contents are not saved.
+    LaunchedEffect(
+        ownerName,
+        propertyName,
+        propertyType,
+        propertyAddress,
+        city,
+        pincode,
+        identityType,
+        hasIdentityDocument,
+        photoCount
+    ) {
+        kycViewModel.saveDraft(
+            KycApplication(
+                ownerName = ownerName,
+                propertyName = propertyName,
+                propertyType = propertyType,
+                propertyAddress = propertyAddress,
+                city = city,
+                pincode = pincode,
+                identityType = identityType,
+                documentSelected = hasIdentityDocument,
+                propertyPhotoCount = photoCount,
+                status = "DRAFT"
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -117,8 +170,8 @@ fun OwnerKycScreen(
                     tint = KycBlue
                 )
                 Text(
-                    text = "Your owner account is pending verification. " +
-                            "Complete this form to prepare your KYC application.",
+                    text = "Your details are saved locally as a draft. " +
+                            "Complete the form to continue with the demo review.",
                     color = KycText,
                     fontSize = 13.sp,
                     lineHeight = 19.sp
@@ -130,7 +183,9 @@ fun OwnerKycScreen(
 
         KycSectionTitle("Personal Information", "Your basic details")
 
-        KycField("Owner Full Name", ownerName) { ownerName = it }
+        KycField("Owner Full Name", ownerName) {
+            ownerName = it
+        }
 
         Spacer(Modifier.height(12.dp))
 
@@ -169,14 +224,18 @@ fun OwnerKycScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        KycField("City", city) { city = it }
+        KycField("City", city) {
+            city = it
+        }
 
         Spacer(Modifier.height(12.dp))
 
         KycField(
             label = "6-digit PIN Code",
             value = pincode,
-            onValueChange = { pincode = it.filter(Char::isDigit).take(6) }
+            onValueChange = {
+                pincode = it.filter(Char::isDigit).take(6)
+            }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -225,10 +284,11 @@ fun OwnerKycScreen(
         UploadCard(
             title = "Identity Document",
             description = "Choose a PDF or image from your device",
-            selectedText = if (identityDocument != null)
+            selectedText = if (hasIdentityDocument) {
                 "Document selected"
-            else
-                "No document selected",
+            } else {
+                "No document selected"
+            },
             icon = Icons.Outlined.Description,
             onClick = {
                 documentPicker.launch(
@@ -244,10 +304,11 @@ fun OwnerKycScreen(
         UploadCard(
             title = "Property Images",
             description = "Select room, bathroom and common-area photos",
-            selectedText = if (propertyPhotos.isNotEmpty())
-                "${propertyPhotos.size} photo(s) selected"
-            else
-                "No photos selected",
+            selectedText = if (photoCount > 0) {
+                "$photoCount photo(s) selected"
+            } else {
+                "No photos selected"
+            },
             icon = Icons.Outlined.AddPhotoAlternate,
             onClick = {
                 photoPicker.launch(arrayOf("image/*"))
@@ -261,9 +322,9 @@ fun OwnerKycScreen(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Privacy notice: This is currently a local demo. " +
-                        "Files are selected on your device but are not uploaded " +
-                        "to Firebase or submitted for admin review.",
+                text = "Privacy notice: This is a local demo. " +
+                        "Your form details are saved on this device. " +
+                        "Documents and photos are not uploaded to Firebase.",
                 modifier = Modifier.padding(14.dp),
                 color = KycText,
                 fontSize = 12.sp,
@@ -323,15 +384,32 @@ fun OwnerKycScreen(
             title = { Text("Details Ready") },
             text = {
                 Text(
-                    "Your details have passed the local form checks. " +
-                            "No documents have been uploaded and no application " +
-                            "has been sent to an admin yet."
+                    "Your details passed the local form checks. " +
+                            "Continue to save this application as a demo " +
+                            "pending-review application. Nothing is sent to an admin."
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showConfirmation = false
+
+                        // Save the latest details before continuing.
+                        kycViewModel.saveDraft(
+                            KycApplication(
+                                ownerName = ownerName,
+                                propertyName = propertyName,
+                                propertyType = propertyType,
+                                propertyAddress = propertyAddress,
+                                city = city,
+                                pincode = pincode,
+                                identityType = identityType,
+                                documentSelected = hasIdentityDocument,
+                                propertyPhotoCount = photoCount,
+                                status = "DRAFT"
+                            )
+                        )
+
                         onSubmitKyc()
                     }
                 ) {

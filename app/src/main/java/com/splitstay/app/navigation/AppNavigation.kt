@@ -16,7 +16,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
+import com.splitstay.app.owner.presentation.OwnerApplicationStatusScreen
+import com.splitstay.app.kyc.presentation.KycViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import com.splitstay.app.admin.presentation.AdminReviewDashboardScreen
+import com.splitstay.app.kyc.data.LocalKycRepository
+import com.splitstay.app.kyc.presentation.KycViewModelFactory
 import com.splitstay.app.RoleSelectionScreen
 import com.splitstay.app.SplitStaySplashScreen
 import com.splitstay.app.auth.presentation.AuthUiState
@@ -30,6 +37,13 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
+    val context = LocalContext.current
+
+    val kycViewModel: KycViewModel = viewModel(
+        factory = KycViewModelFactory(
+            LocalKycRepository(context.applicationContext)
+        )
+    )
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory()
     )
@@ -49,6 +63,23 @@ fun AppNavigation(
                             inclusive = true
                         }
                     }
+                }
+            )
+        }
+
+        composable<AdminDashboard> {
+            val application by kycViewModel.application.collectAsState()
+
+            AdminReviewDashboardScreen(
+                application = application,
+                onApprove = {
+                    kycViewModel.updateDemoStatus("APPROVED")
+                },
+                onReject = { reason ->
+                    kycViewModel.updateDemoStatus(
+                        status = "REJECTED",
+                        reason = reason
+                    )
                 }
             )
         }
@@ -163,14 +194,31 @@ fun AppNavigation(
 
         // Actual Owner KYC form
         composable<OwnerKycRequired> {
-            OwnerKycScreen()
+            OwnerKycScreen(
+                kycViewModel = kycViewModel,
+                onSubmitKyc = {
+                    kycViewModel.submitForDemoReview(
+                        kycViewModel.application.value
+                    )
+
+                    navController.navigate(OwnerPendingApproval) {
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
 
         // Owner approval waiting screen.
         composable<OwnerPendingApproval> {
-            OwnerStatusScreen(
-                title = "Application Under Review",
-                message = "Your owner application is awaiting approval. Property management will become available after approval."
+            val application by kycViewModel.application.collectAsState()
+
+            OwnerApplicationStatusScreen(
+                application = application,
+                onOpenAdminDemo = {
+                    navController.navigate(AdminDashboard) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 

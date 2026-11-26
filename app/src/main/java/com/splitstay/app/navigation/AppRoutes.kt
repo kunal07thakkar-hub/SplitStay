@@ -42,3 +42,6 @@ data object OwnerKycRequired
 
 @Serializable
 data object OwnerPendingApproval
+
+@Serializable
+data object AdminDashboard
