@@ -53,3 +53,9 @@ data object AdminDashboard
 
 @Serializable
 data object StudentExplore
+
+
+@Serializable
+data class StudentPropertyDetails(
+    val propertyId: String
+)

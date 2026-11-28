@@ -7,11 +7,13 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import androidx.navigation.navigation
 import com.splitstay.app.auth.presentation.AuthViewModel
 import com.splitstay.app.property.presentation.PropertyViewModel
 import com.splitstay.app.student.presentation.StudentDashboardScreen
 import com.splitstay.app.student.presentation.StudentExploreScreen
+import com.splitstay.app.student.presentation.StudentPropertyDetailsScreen
 
 fun NavGraphBuilder.studentNavGraph(
     navController: NavHostController,
@@ -63,7 +65,32 @@ fun NavGraphBuilder.studentNavGraph(
                     navController.popBackStack()
                 },
                 onPropertyClick = { propertyId ->
-                    // Property details navigation will be added in the next milestone.
+                    navController.navigate(
+                        StudentPropertyDetails(propertyId = propertyId)
+                    )
+                }
+            )
+        }
+
+        composable<StudentPropertyDetails> { backStackEntry ->
+            val route = backStackEntry.toRoute<StudentPropertyDetails>()
+            val properties by propertyViewModel.studentProperties.collectAsState()
+            val isLoading by propertyViewModel.isStudentLoading.collectAsState()
+            val errorMessage by propertyViewModel.studentErrorMessage.collectAsState()
+
+            val selectedProperty = properties.firstOrNull {
+                it.id == route.propertyId
+            }
+
+            StudentPropertyDetailsScreen(
+                property = selectedProperty,
+                isLoading = isLoading,
+                errorMessage = errorMessage,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onRetry = {
+                    propertyViewModel.retryStudentLoading()
                 }
             )
         }
