@@ -1,3 +1,4 @@
+
 package com.splitstay.app.property.data
 
 import com.google.firebase.auth.FirebaseAuth
@@ -53,12 +54,14 @@ class PropertyRepository(
             "pincode" to draft.pincode,
             "description" to draft.description,
             "monthlyRent" to draft.monthlyRent,
-            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+            "createdAt" to
+                    com.google.firebase.firestore.FieldValue.serverTimestamp()
         )
 
         propertyDocument.set(propertyData).await()
     }
 
+    // Existing owner-only property listener.
     fun observeOwnerProperties(): Flow<List<PropertyListing>> = callbackFlow {
         val user = firebaseAuth.currentUser
 
@@ -67,31 +70,84 @@ class PropertyRepository(
             return@callbackFlow
         }
 
-        var registration: ListenerRegistration? = null
+        val registration: ListenerRegistration =
+            propertiesCollection
+                .whereEqualTo("ownerUid", user.uid)
+                .addSnapshotListener { snapshot, error ->
 
-        registration = propertiesCollection
-            .whereEqualTo("ownerUid", user.uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
+                    if (error != null) {
+                        close(error)
+                        return@addSnapshotListener
+                    }
+
+                    val listings = snapshot?.documents
+                        ?.mapNotNull { document ->
+                            document.toObject(PropertyListing::class.java)
+                                ?.copy(id = document.id)
+                        }
+                        ?.sortedByDescending {
+                            it.createdAt?.toDate()?.time ?: 0L
+                        }
+                        .orEmpty()
+
+                    trySend(listings)
                 }
 
-                val listings = snapshot?.documents
-                    ?.mapNotNull { document ->
-                        document.toObject(PropertyListing::class.java)
-                            ?.copy(id = document.id)
-                    }
-                    ?.sortedByDescending {
-                        it.createdAt?.toDate()?.time ?: 0L
-                    }
-                    .orEmpty()
+        awaitClose {
+            registration.remove()
+        }
+    }
 
-                trySend(listings)
+    // New student-facing realtime property listener.
+    fun observeStudentProperties(): Flow<List<PropertyListing>> = callbackFlow {
+        val user = firebaseAuth.currentUser
+
+        if (user == null) {
+            close(IllegalStateException("Please sign in again."))
+            return@callbackFlow
+        }
+
+        try {
+            user.reload().await()
+            user.getIdToken(true).await()
+
+            if (!user.isEmailVerified) {
+                close(
+                    IllegalStateException(
+                        "Please verify your email to explore properties."
+                    )
+                )
+                return@callbackFlow
             }
+        } catch (exception: Exception) {
+            close(exception)
+            return@callbackFlow
+        }
+
+        val registration: ListenerRegistration =
+            propertiesCollection
+                .addSnapshotListener { snapshot, error ->
+
+                    if (error != null) {
+                        close(error)
+                        return@addSnapshotListener
+                    }
+
+                    val listings = snapshot?.documents
+                        ?.mapNotNull { document ->
+                            document.toObject(PropertyListing::class.java)
+                                ?.copy(id = document.id)
+                        }
+                        ?.sortedByDescending {
+                            it.createdAt?.toDate()?.time ?: 0L
+                        }
+                        .orEmpty()
+
+                    trySend(listings)
+                }
 
         awaitClose {
-            registration?.remove()
+            registration.remove()
         }
     }
 }

@@ -50,3 +50,6 @@ data object OwnerPendingApproval
 
 @Serializable
 data object AdminDashboard
+
+@Serializable
+data object StudentExplore

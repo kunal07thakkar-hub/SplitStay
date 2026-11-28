@@ -237,7 +237,9 @@ fun AppNavigation(
         }
 
         studentNavGraph(
-            authViewModel = authViewModel
+            navController = navController,
+            authViewModel = authViewModel,
+            propertyViewModel = propertyViewModel
         )
 
         ownerNavGraph(
